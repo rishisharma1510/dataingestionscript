@@ -1,1 +1,144 @@
+# Iceberg to SQL Server Data Ingestion
 
+A Python script that reads data from Apache Iceberg tables and ingests it into Microsoft SQL Server.
+
+## Features
+
+- Reads from any Iceberg catalog (REST, Hive, Glue, DynamoDB, SQL)
+- Automatic table creation in SQL Server with correct type mapping
+- Configurable via YAML file or command-line arguments
+- Column selection and row filtering support
+- Batched inserts with progress logging
+- Option to drop and recreate the target table
+
+## Setup
+
+```bash
+pip install -r requirements.txt
+```
+
+## Configuration
+
+Copy and edit `config.yaml` with your Iceberg and SQL Server details:
+
+```yaml
+iceberg:
+  catalog_name: "my_catalog"
+  catalog_properties:
+    type: "rest"                    # rest, hive, glue, dynamodb, sql
+    uri: "http://localhost:8181"
+  namespace: "my_namespace"
+  table: "my_table"
+
+sql_server:
+  host: "localhost"
+  port: 1433
+  database: "my_database"
+  user: "sa"
+  password: "YourPassword123!"
+  target_schema: "dbo"
+  target_table: "my_table"
+  batch_size: 1000
+  drop_existing: false
+```
+
+### Iceberg Catalog Types
+
+**REST Catalog:**
+```yaml
+catalog_properties:
+  type: "rest"
+  uri: "http://localhost:8181"
+```
+
+**AWS Glue Catalog:**
+```yaml
+catalog_properties:
+  type: "glue"
+  s3.region: "us-east-1"
+```
+
+**Hive Metastore:**
+```yaml
+catalog_properties:
+  type: "hive"
+  uri: "thrift://localhost:9083"
+```
+
+### Optional Settings
+
+**Select specific columns:**
+```yaml
+iceberg:
+  columns:
+    - col_a
+    - col_b
+```
+
+**Filter rows:**
+```yaml
+iceberg:
+  row_filter: "status = 'active' AND created_date > '2024-01-01'"
+```
+
+## Usage
+
+**Basic run with config file:**
+```bash
+python iceberg_to_sqlserver.py -c config.yaml
+```
+
+**Override settings via CLI:**
+```bash
+python iceberg_to_sqlserver.py \
+  -c config.yaml \
+  --iceberg-namespace production \
+  --iceberg-table orders \
+  --sql-host db.example.com \
+  --sql-database analytics \
+  --batch-size 5000
+```
+
+**Drop and recreate the target table:**
+```bash
+python iceberg_to_sqlserver.py -c config.yaml --drop-existing
+```
+
+**Enable verbose logging:**
+```bash
+python iceberg_to_sqlserver.py -c config.yaml --verbose
+```
+
+## CLI Options
+
+| Flag | Description |
+|------|-------------|
+| `-c, --config` | Path to YAML config file (default: `config.yaml`) |
+| `--iceberg-catalog-name` | Override catalog name |
+| `--iceberg-namespace` | Override Iceberg namespace |
+| `--iceberg-table` | Override Iceberg table name |
+| `--sql-host` | Override SQL Server host |
+| `--sql-port` | Override SQL Server port |
+| `--sql-database` | Override SQL Server database |
+| `--sql-user` | Override SQL Server user |
+| `--sql-password` | Override SQL Server password |
+| `--sql-target-schema` | Override target schema |
+| `--sql-target-table` | Override target table name |
+| `--batch-size` | Override insert batch size |
+| `--drop-existing` | Drop target table before ingestion |
+| `--verbose` | Enable debug logging |
+
+## Type Mapping
+
+| Iceberg / Arrow Type | SQL Server Type |
+|---------------------|-----------------|
+| boolean | BIT |
+| int (8/16/32/64) | TINYINT / SMALLINT / INT / BIGINT |
+| float / double | REAL / FLOAT |
+| decimal(p, s) | DECIMAL(p, s) |
+| date | DATE |
+| timestamp | DATETIME2 |
+| time | TIME |
+| string | NVARCHAR(MAX) |
+| binary | VARBINARY(MAX) |
+| list / struct / map | NVARCHAR(MAX) (JSON serialized) |

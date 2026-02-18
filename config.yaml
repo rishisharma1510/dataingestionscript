@@ -1,0 +1,52 @@
+# =============================================================================
+# Iceberg to SQL Server Ingestion - Configuration
+# =============================================================================
+# Copy this file and fill in your actual connection details.
+# You can also override any setting via command-line arguments.
+# =============================================================================
+
+iceberg:
+  # -- Catalog configuration --
+  catalog_name: "my_catalog"
+
+  # Properties passed directly to pyiceberg's load_catalog().
+  # Adjust based on your catalog type (REST, Hive, Glue, etc.)
+  catalog_properties:
+    type: "rest"                          # Options: rest, hive, glue, dynamodb, sql
+    uri: "http://localhost:8181"           # REST catalog endpoint
+    # warehouse: "s3://my-bucket/warehouse"
+    # For AWS Glue catalog:
+    #   type: "glue"
+    #   s3.region: "us-east-1"
+    # For Hive Metastore:
+    #   type: "hive"
+    #   uri: "thrift://localhost:9083"
+
+  # -- Table selection --
+  namespace: "my_namespace"               # Iceberg namespace / database
+  table: "my_table"                       # Iceberg table name
+
+  # -- Optional: select specific columns (omit to select all) --
+  # columns:
+  #   - col_a
+  #   - col_b
+  #   - col_c
+
+  # -- Optional: row filter expression (PyIceberg filter syntax) --
+  # row_filter: "col_a > 100 AND col_b = 'active'"
+
+sql_server:
+  # -- Connection details --
+  host: "localhost"
+  port: 1433
+  database: "my_database"
+  user: "sa"
+  password: "YourPassword123!"
+
+  # -- Target table settings --
+  target_schema: "dbo"                    # SQL Server schema to write into
+  target_table: "my_table"                # Target table name (defaults to Iceberg table name)
+
+  # -- Ingestion options --
+  batch_size: 1000                        # Rows per INSERT batch
+  drop_existing: false                    # Set to true to DROP and re-create the target table
