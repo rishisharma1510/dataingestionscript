@@ -272,15 +272,30 @@ function Shorten-FolderName {
         [string]$ParentPath,
         [string]$FolderName
     )
-    $original = $FolderName
 
-    # Apply same reduction steps to folder names
+    # Step 1: Clean up extra characters
     $FolderName = Remove-ExtraCharacters $FolderName
-    $FolderName = Remove-Conjunctions $FolderName
-    $FolderName = Apply-Abbreviations $FolderName
 
-    if ($FolderName.Length -gt 30) {
+    # Step 2: Remove conjunctions (only if still over limit)
+    if (($ParentPath.Length + 1 + $FolderName.Length) -gt $MaxPathLength) {
+        $FolderName = Remove-Conjunctions $FolderName
+    }
+
+    # Step 3: Apply abbreviations (only if still over limit)
+    if (($ParentPath.Length + 1 + $FolderName.Length) -gt $MaxPathLength) {
+        $FolderName = Apply-Abbreviations $FolderName
+    }
+
+    # Step 4: Remove vowels (only if still over limit)
+    if (($ParentPath.Length + 1 + $FolderName.Length) -gt $MaxPathLength) {
         $FolderName = Remove-Vowels $FolderName
+    }
+
+    # Step 5: Hard truncate as last resort
+    $maxFolder = $MaxPathLength - $ParentPath.Length - 1
+    if ($maxFolder -lt 4) { $maxFolder = 4 }
+    if (($ParentPath.Length + 1 + $FolderName.Length) -gt $MaxPathLength) {
+        $FolderName = Truncate-Name -Name $FolderName -MaxLength $maxFolder
     }
 
     return $FolderName
