@@ -122,7 +122,6 @@ $Abbreviations = @{
     'documentation' = 'docs'
     'preparation'   = 'prep'
     'screenshot'    = 'scrn'
-    'attachment'    = 'att'
     'updated'       = 'upd'
     'quarterly'     = 'qtrly'
     'assessment'    = 'asmt'
@@ -135,7 +134,6 @@ $Abbreviations = @{
     'national'      = 'natl'
     'association'   = 'assoc'
     'independent'   = 'indep'
-    'management'    = 'mgmt'
 }
 
 # --- Helper Functions ---
